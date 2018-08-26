@@ -45,7 +45,9 @@ export default ({ calls, index, onChangeCall }) => (
 		style={styles.block}
 	>
 		{
-			calls2d(calls).map((lineCalls, ind) => (
+			!calls
+			?<Text>No data</Text>
+			:calls2d(calls).map((lineCalls, ind) => (
 				<Line
 					lineCalls={lineCalls}
 					block={index}
