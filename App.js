@@ -6,137 +6,75 @@ import Block from './components/Block';
 import utils from './utils';
 
 export default class App extends React.Component {
-  state = {
-    config: {
-        score: 4,
-
-        scoreType: {
-            3: [2, 3, 4],
-            4: [3, 4, 5],
-            5: [4, 5, 6],
-            6: [5, 6, 7],
-            7: [6, 7, 8],
+    state = {
+        board: [],
+        total: 0,
+        config: {
+            score: 4,
         }
-    },
-    board: [
-    [
-    { value: 1, access: 2},
-    { value: 2, access: 0},
-    { value: 3, access: 1},
-    { value: 4, access: 0},
-    { value: 5, access: 0},
-    { value: 6, access: 0},
-    { value: 7, access: 0},
-    { value: 8, access: 0},
-    { value: 9, access: 2},
-    ],[
-    { value: 6, access: 2},
-    { value: 7, access: 0},
-    { value: 5, access: 0},
-    { value: 4, access: 0},
-    { value: 3, access: 1},
-    { value: 9, access: 0},
-    { value: 2, access: 1},
-    { value: 8, access: 0},
-    { value: 1, access: 2},
-    ],[
-    { value: 3, access: 0},
-    { value: 2, access: 0},
-    { value: 4, access: 2},
-    { value: 1, access: 0},
-    { value: 5, access: 1},
-    { value: 9, access: 1},
-    { value: 7, access: 1},
-    { value: 8, access: 0},
-    { value: 6, access: 0},
-    ],[
-    { value: 1, access: 2},
-    { value: 2, access: 0},
-    { value: 3, access: 1},
-    { value: 4, access: 0},
-    { value: 5, access: 0},
-    { value: 6, access: 0},
-    { value: 7, access: 0},
-    { value: 8, access: 0},
-    { value: 9, access: 2},
-    ],[
-    { value: 6, access: 2},
-    { value: 7, access: 0},
-    { value: 5, access: 0},
-    { value: 4, access: 0},
-    { value: 3, access: 1},
-    { value: 9, access: 0},
-    { value: 2, access: 1},
-    { value: 8, access: 0},
-    { value: 1, access: 2},
-    ],[
-    { value: 3, access: 0},
-    { value: 2, access: 0},
-    { value: 4, access: 2},
-    { value: 1, access: 0},
-    { value: 5, access: 1},
-    { value: 9, access: 1},
-    { value: 7, access: 1},
-    { value: 8, access: 0},
-    { value: 6, access: 1},
-    ],[
-    { value: 1, access: 2},
-    { value: 2, access: 0},
-    { value: 3, access: 1},
-    { value: 4, access: 0},
-    { value: 5, access: 0},
-    { value: 6, access: 0},
-    { value: 7, access: 0},
-    { value: 8, access: 0},
-    { value: 9, access: 2},
-    ],[
-    { value: 6, access: 2},
-    { value: 7, access: 0},
-    { value: 5, access: 0},
-    { value: 4, access: 0},
-    { value: 3, access: 1},
-    { value: 9, access: 0},
-    { value: 2, access: 1},
-    { value: 8, access: 0},
-    { value: 1, access: 2},
-    ],[
-    { value: 3, access: 0},
-    { value: 2, access: 0},
-    { value: 4, access: 2},
-    { value: 1, access: 0},
-    { value: 5, access: 1},
-    { value: 9, access: 1},
-    { value: 7, access: 1},
-    { value: 8, access: 0},
-    { value: 6, access: 0},
-    ],]
-}
+    }
+
 
 handleGenerateBoard = () => {
-    let newBoard = new Array(9).reduce((board, _, indexBlock) => {
+    let newBoard = new Array(9).fill(0).reduce((board, _, indexBlock, crr) => {
         //generate count visible calls
-        const countVisibleCalls = utils.generateNumberBetween(this.state.config.score - 1, this.state.config.score + 1);
+        let countVisibleCalls = utils.generateNumberBetween(this.state.config.score - 1, this.state.config.score + 1);
         let arrVisibleCalls = [];
 
         do {
             //generate index fo visible calls
-            let numberCall = utils.generateNumberBetween(0, 8);
-            if (!arrVisibleCalls.includes(numberCall)) {
-                arrVisibleCalls.push(numberCall);
+            let numberVisibleCall = utils.generateNumberBetween(0, 8);
+
+            if (!arrVisibleCalls.includes(numberVisibleCall)) {
+                arrVisibleCalls.push(numberVisibleCall);
                 --countVisibleCalls;
             }
         } while (countVisibleCalls)
-
+        
         //generate new block
-        return [ ...board, new Array(9).map((_, indexCall) => {
-            //generate number for calls
-            return { value: indexCall, access: arrVisibleCalls.includes(indexCall) ? 2 : 0}
-        })];
+        let block = [];
+        let endNumber = 45;
+        
+        do {
+            const numberForCall = block.length < 8
+            ? utils.generateNumberBetween(1, 9)
+            : endNumber;
+
+            const isOnlyInBlock = !utils.isValueInArray(numberForCall, block);
+
+            const isOnlyInColumn = !utils.isValueInArray(
+                numberForCall,
+                utils.getColumn(utils.getNumberColumn(indexBlock, block.length), board)
+            );
+            const isOnlyInRow = !utils.isValueInArray(
+                numberForCall,
+                utils.getRow(utils.getNumberRow(indexBlock, block.length), board)
+            );
+// console.log(
+//     'block:'+ indexBlock,
+//     'call:' + block.length, 
+//     'column:' + utils.getNumberColumn(indexBlock, block.length),
+//     'row:' + utils.getNumberRow(indexBlock, block.length)
+//     , isOnlyInBlock
+//     , isOnlyInRow 
+//     );
+            if (isOnlyInBlock) {//&& (isOnlyInRow || indexBlock > 2)){//&& isOnlyInRow) {
+                endNumber = endNumber - numberForCall;
+                block.push({
+                    value: numberForCall,
+                    access: arrVisibleCalls.includes(block.length) ? 1 : 0 
+                });
+            }
+        } while (block.length < 9)
+
+        return [ ...board, [...block] ];
     },[]);
-
-
+//console.log(utils.getColumn(7,newBoard))
+//console.log(utils.getRow(7, newBoard));
+//console.log(newBoard)
     this.setState({
-        board: newBoard
+        board: newBoard,
+        total: 0,
     });
 }
 
@@ -152,6 +90,7 @@ handleChangeCall = (block, call, value) => {
 
   render() {
       const lineArr=[0,1,2];
+      //this.handleGenerateBoard();
       return (
           <View style={styles.container}>
               <View style={styles.header}>
