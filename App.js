@@ -6,92 +6,100 @@ import Block from './components/Block';
 import utils from './utils';
 
 export default class App extends React.Component {
+
     state = {
         board: [],
         total: 0,
         config: {
-            score: 4,
+            score: 5,
         }
     }
 
+    getArrayBlocksBoard = () => {
+        return this.state.board.reduce((board,block) => 
+            [ ...board, block.map(call => (call.value * 1))], [])
+    }
 
-handleGenerateBoard = () => {
-    let newBoard = new Array(9).fill(0).reduce((board, _, indexBlock, crr) => {
-        //generate count visible calls
-        let countVisibleCalls = utils.generateNumberBetween(this.state.config.score - 1, this.state.config.score + 1);
-        let arrVisibleCalls = [];
+    getArrayLinesBoard = () => {
+        return utils.LinesBlocksConverter(this.getArrayBlocksBoard())
+    } 
 
-        do {
-            //generate index fo visible calls
-            let numberVisibleCall = utils.generateNumberBetween(0, 8);
+    handleCheckBoard = () => {
+        let isGood;
 
-            if (!arrVisibleCalls.includes(numberVisibleCall)) {
-                arrVisibleCalls.push(numberVisibleCall);
-                --countVisibleCalls;
-            }
-        } while (countVisibleCalls)
-        
-        //generate new block
-        let block = [];
-        let endNumber = 45;
-        
-        do {
-            const numberForCall = block.length < 8
-            ? utils.generateNumberBetween(1, 9)
-            : endNumber;
+        if (this.state.board.length) {
+            const blocksBoard = this.getArrayBlocksBoard();
+            const linesBoard = this.getArrayLinesBoard();
 
-            const isOnlyInBlock = !utils.isValueInArray(numberForCall, block);
+            let i = 0;
+            do {
+                const line = linesBoard[i];
+                const column = utils.getColumn(linesBoard, i);
+                const square = blocksBoard[i];
 
-            const isOnlyInColumn = !utils.isValueInArray(
-                numberForCall,
-                utils.getColumn(utils.getNumberColumn(indexBlock, block.length), board)
+                isGood = (
+                    utils.uniq(line).length === 9 &&
+                    utils.uniq(column).length === 9 &&
+                    utils.uniq(square).length === 9
+                );
+                //console.log(utils.uniq(line).length, utils.uniq(column).length, utils.uniq(square).length, i, isGood)
+            } while (isGood && ++i < 9)
+        }
+        console.log('board', isGood)
+        return isGood;
+    }
+
+
+    handleGenerateBoard = () => {
+        const board = utils.getRows([], []);
+
+        console.log(board)
+
+        let newBoard = board.map((line, lineIndex) => {
+            let countVisibleCalls = utils.getRandom(this.state.config.score - 1, this.state.config.score + 1);
+            let arrVisibleCalls = [];
+
+            do {
+                //generate index fo visible calls
+                const numberVisibleCall = utils.getRandom(0, 8);
+
+                if (!arrVisibleCalls.includes(numberVisibleCall)) {
+                    arrVisibleCalls.push(numberVisibleCall);
+                    --countVisibleCalls;
+                }
+            } while (countVisibleCalls)
+
+            return line.map((call, callIndex) => (arrVisibleCalls.includes(callIndex)
+            ? {value: call, access: 1}
+            : {value: 0, access: 0})
             );
-            const isOnlyInRow = !utils.isValueInArray(
-                numberForCall,
-                utils.getRow(utils.getNumberRow(indexBlock, block.length), board)
-            );
-// console.log(
-//     'block:'+ indexBlock,
-//     'call:' + block.length, 
-//     'column:' + utils.getNumberColumn(indexBlock, block.length),
-//     'row:' + utils.getNumberRow(indexBlock, block.length)
-//     , isOnlyInBlock
-//     , isOnlyInRow 
-//     );
-            if (isOnlyInBlock) {//&& (isOnlyInRow || indexBlock > 2)){//&& isOnlyInRow) {
-                endNumber = endNumber - numberForCall;
-                block.push({
-                    value: numberForCall,
-                    access: arrVisibleCalls.includes(block.length) ? 1 : 0 
-                });
-            }
-        } while (block.length < 9)
+        });
 
-        return [ ...board, [...block] ];
-    },[]);
-//console.log(utils.getColumn(7,newBoard))
-//console.log(utils.getRow(7, newBoard));
-//console.log(newBoard)
-    this.setState({
-        board: newBoard,
-        total: 0,
-    });
-}
+        newBoard = utils.LinesBlocksConverter(newBoard);
 
-handleChangeCall = (block, call, value) => {
-  const board = this.state.board;
-  board[block][call].value = value;
-  board[block][call].access = 2;
-		//console.log(board)
-		this.setState({
-			board: [...board],
-		});
-	}
+        //console.log('new', newBoard)
 
-  render() {
-      const lineArr=[0,1,2];
-      //this.handleGenerateBoard();
-      return (
+        this.setState({
+            board: newBoard,
+            total: 0,
+        });
+    }
+
+    handleChangeCall = (block, call, value) => {
+        const board = this.state.board;
+        board[block][call].value = value;
+        board[block][call].access = 2;
+    	//console.log(board)
+    	this.setState({
+    		board: [...board],
+    	});
+        this.handleCheckBoard();
+    }
+
+    render() {
+        const lineArr=[0,1,2];
+        //this.handleGenerateBoard();
+        return (
           <View style={styles.container}>
               <View style={styles.header}>
                 <Text style={styles.headerText}>Sudoku</Text>
@@ -116,7 +124,7 @@ handleChangeCall = (block, call, value) => {
             </View>
             <View style={styles.footer}>
                 <Button title="New" onPress={() => this.handleGenerateBoard()}></Button>
-                <Button title="Cancel" onPress={() => 5}></Button>
+                <Button title="Check" onPress={() => this.handleCheckBoard()}></Button>
             </View>
         </View>
         );

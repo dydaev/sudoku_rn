@@ -6,15 +6,18 @@ import Call from './Call';
 const styles = {
 	block: {
 		//height: 120,
-		width: 120,
+		flex:1,
+		//width: 120,
 		borderColor: '#555',
 		borderWidth: 1,
+		justifyContent: 'space-between',
 		//marginTop: 1,
 	},
 	line: {
 		//marginTop: 1,
 		flex:1,
 		flexDirection: 'row',
+		justifyContent: 'space-between',
 	}
 };
 
