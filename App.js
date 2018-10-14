@@ -1,5 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Button from 'react-native-button';
 
 import Call from './components/Call';
 import Block from './components/Block';
@@ -49,11 +50,17 @@ export default class App extends React.Component {
         return isGood;
     }
 
+    handleResetBoard = () => {
+        this.setState({
+            board: this.state.board.map(block => block.map(call => 
+                call.access !== 2
+                ? call
+                : { ...call, value: 0 }))
+        });
+    }
 
     handleGenerateBoard = () => {
         const board = utils.getRows([], []);
-
-        console.log(board)
 
         let newBoard = board.map((line, lineIndex) => {
             let countVisibleCalls = utils.getRandom(this.state.config.score - 1, this.state.config.score + 1);
@@ -77,8 +84,6 @@ export default class App extends React.Component {
 
         newBoard = utils.LinesBlocksConverter(newBoard);
 
-        //console.log('new', newBoard)
-
         this.setState({
             board: newBoard,
             total: 0,
@@ -89,7 +94,7 @@ export default class App extends React.Component {
         const board = this.state.board;
         board[block][call].value = value;
         board[block][call].access = 2;
-    	//console.log(board)
+
     	this.setState({
     		board: [...board],
     	});
@@ -123,8 +128,12 @@ export default class App extends React.Component {
             }
             </View>
             <View style={styles.footer}>
-                <Button title="New" onPress={() => this.handleGenerateBoard()}></Button>
-                <Button title="Check" onPress={() => this.handleCheckBoard()}></Button>
+                <View style={styles.footerButtonsContainer}>
+                    <Button style={{fontSize: 30, color: 'gray'}} onPress={() => this.handleGenerateBoard()}>New</Button>
+                </View>
+                <View style={styles.footerButtonsContainer}>
+                    <Button style={{fontSize: 30, color: 'gray'}} onPress={() => this.handleResetBoard()}>Reset</Button>
+                </View>
             </View>
         </View>
         );
@@ -132,39 +141,41 @@ export default class App extends React.Component {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    marginTop: 30,
-    marginBottom: 10,
-    
-    //color: '#777',
-    // backgroundColor: '#aaa',
-    //fontSize: 60,
-    //textAlign: 'center'
-},
-headerText: {
-    textAlign: 'center',
-    fontSize: 20,
-},
-board: {
-    height: 375,
-    flex: 0,
-    backgroundColor: '#aaa',
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-},
-boardLines: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-},
-footer: {
-	flexDirection: 'row',
-	justifyContent: 'space-around',
-},
-container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    //alignItems: 'center',
-    justifyContent: 'flex-start',
-},
+    header: {
+        marginTop: 30,
+        marginBottom: 10,
+    },
+    headerText: {
+        textAlign: 'center',
+        fontSize: 35,
+    },
+    board: {
+        height: 375,
+        flex: 0,
+        backgroundColor: 'gray',
+        flexDirection: 'column',
+        justifyContent: 'flex-start',
+    },
+    boardLines: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'flex-start',
+    },
+    footer: {
+        padding: 10,
+        flex: 1,
+    	flexDirection: 'row',
+        alignItems: 'stretch',
+        justifyContent: 'space-around',
+    },
+    footerButtonsContainer: {
+        padding: 10,
+        flex: 1,
+        justifyContent: 'space-around',
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+        justifyContent: 'flex-start',
+    },
 });
